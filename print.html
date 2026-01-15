@@ -82,6 +82,7 @@
 <div class="center" style="margin-top:10px">
   <button onclick="window.print()">🖨 Cetak</button>
   <button onclick="cetakText()">🧾 Cetak Thermal (Text 58mm)</button>
+  <button onclick="cetakTextDanShare()">📤 Cetak & Share (Thermal)</button>
 </div>
 
 <textarea id="outputText" placeholder="Output text ESC/POS 58mm..."></textarea>
@@ -215,7 +216,31 @@ function cetakText() {
 
   document.getElementById("outputText").value = t;
 }
+  
+function cetakTextDanShare() {
+  // Panggil generator text ESC/POS
+  cetakText();
+
+  const text = document.getElementById("outputText").value;
+
+  if (!text) {
+    alert("Output text belum ada");
+    return;
+  }
+
+  if (navigator.share) {
+    navigator.share({
+      text: text
+    }).catch(err => {
+      console.error("Share dibatalkan", err);
+    });
+  } else {
+    alert("Fitur share tidak didukung di perangkat ini");
+  }
+}
+
 </script>
 
 </body>
 </html>
+
