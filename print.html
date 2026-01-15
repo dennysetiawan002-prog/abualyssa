@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    /* ===== THERMAL 58mm VISUAL ===== */
     body {
       font-family: monospace;
       width: 58mm;
@@ -44,22 +43,18 @@
     }
 
     @media print {
-      button, textarea {
-        display: none;
-      }
+      button, textarea { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="center bold" id="namaTokoHeader">-</div>
 <div class="center" id="alamatTokoHeader"></div>
 <div class="center">Struk Pesanan</div>
 
 <hr>
 
-<!-- INFO -->
 <div>No: <span id="noPesanan">-</span></div>
 <div>Tgl: <span id="tanggal">-</span></div>
 <div>Pelanggan: <span id="namaPelanggan">-</span></div>
@@ -67,16 +62,12 @@
 
 <hr>
 
-<!-- ITEM -->
 <table id="listItem">
-  <tr>
-    <td colspan="2" class="center">Belum ada item</td>
-  </tr>
+  <tr><td colspan="2" class="center">Belum ada item</td></tr>
 </table>
 
 <hr>
 
-<!-- TOTAL -->
 <table>
   <tr>
     <td class="bold">TOTAL</td>
@@ -88,25 +79,21 @@
 
 <div class="center">Terima kasih 🙏</div>
 
-<!-- BUTTON -->
 <div class="center" style="margin-top:10px">
   <button onclick="window.print()">🖨 Cetak</button>
   <button onclick="cetakText()">🧾 Cetak Thermal (Text 58mm)</button>
 </div>
 
-<!-- OUTPUT TEXT -->
-<textarea id="outputText" placeholder="Output text struk 58mm akan muncul di sini..."></textarea>
+<textarea id="outputText" placeholder="Output text ESC/POS 58mm..."></textarea>
 
 <script>
 const selectedItems =
   JSON.parse(localStorage.getItem("print_items") || "[]");
 
-if (!selectedItems.length) {
-  alert("Tidak ada item yang dipilih untuk dicetak");
-}
-
 const API_URL =
   "https://script.google.com/macros/s/AKfycbzc7fFnO1J8wiitO1TGC_ubC5qy3p-ryJOJgtE_Vf-uxlKQ2Zr6S52C_oijqY6kJJMV/exec";
+
+let cacheData = {};
 
 loadSettingToko();
 
@@ -118,90 +105,84 @@ if (noPesanan) {
   loadDetailPesanan(noPesanan);
 }
 
-let cacheData = {};
-
 async function loadSettingToko() {
-  try {
-    const res = await fetch(API_URL + "?action=getSettingToko");
-    const data = await res.json();
-    if (!data) return;
+  const res = await fetch(API_URL + "?action=getSettingToko");
+  const data = await res.json();
+  if (!data) return;
 
-    document.getElementById("namaTokoHeader").innerText = data.nama_toko || "TOKO";
-    document.getElementById("alamatTokoHeader").innerText = data.alamat || "";
+  document.getElementById("namaTokoHeader").innerText = data.nama_toko || "TOKO";
+  document.getElementById("alamatTokoHeader").innerText = data.alamat || "";
 
-    cacheData.toko = data;
-  } catch (err) {
-    console.error(err);
-  }
+  cacheData.toko = data;
 }
 
 async function loadDetailPesanan(no) {
-  try {
-    const res = await fetch(
-      API_URL + "?action=getPesananDetail&no=" + encodeURIComponent(no)
-    );
-    const data = await res.json();
+  const res = await fetch(
+    API_URL + "?action=getPesananDetail&no=" + encodeURIComponent(no)
+  );
+  const data = await res.json();
+  if (!data || !data.items) return;
 
-    if (!data || !data.items || !data.items.length) {
-      alert("Data pesanan tidak ditemukan");
-      return;
-    }
+  document.getElementById("tanggal").innerText =
+    new Date(data.tanggal).toLocaleString();
 
-    document.getElementById("tanggal").innerText =
-      new Date(data.tanggal).toLocaleString();
+  document.getElementById("namaPelanggan").innerText = data.nama_toko || "-";
+  document.getElementById("sales").innerText = data.sales || "-";
 
-    document.getElementById("namaPelanggan").innerText = data.nama_toko || "-";
-    document.getElementById("sales").innerText = data.sales || "-";
+  const table = document.getElementById("listItem");
+  table.innerHTML = "";
 
-    const table = document.getElementById("listItem");
-    table.innerHTML = "";
+  let total = 0;
+  selectedItems.forEach(item => {
+    table.innerHTML += `
+      <tr><td colspan="2">${item.produk}</td></tr>
+      <tr>
+        <td>${item.qty} x ${Number(item.harga).toLocaleString()}</td>
+        <td class="right">${Number(item.subtotal).toLocaleString()}</td>
+      </tr>
+    `;
+    total += Number(item.subtotal);
+  });
 
-    let total = 0;
+  document.getElementById("total").innerText = total.toLocaleString();
 
-    selectedItems.forEach(item => {
-      table.innerHTML += `
-        <tr><td colspan="2">${item.produk}</td></tr>
-        <tr>
-          <td>${item.qty} x ${Number(item.harga).toLocaleString()}</td>
-          <td class="right">${Number(item.subtotal).toLocaleString()}</td>
-        </tr>
-      `;
-      total += Number(item.subtotal);
-    });
+  cacheData.pesanan = {
+    no,
+    tanggal: data.tanggal,
+    pelanggan: data.nama_toko,
+    sales: data.sales,
+    items: selectedItems,
+    total
+  };
 
-    document.getElementById("total").innerText = total.toLocaleString();
-
-    cacheData.pesanan = {
-      no,
-      tanggal: data.tanggal,
-      pelanggan: data.nama_toko,
-      sales: data.sales,
-      items: selectedItems,
-      total
-    };
-
-    localStorage.removeItem("print_items");
-  } catch (err) {
-    console.error(err);
-    alert("Gagal memuat data cetak");
-  }
+  localStorage.removeItem("print_items");
 }
 
-/* ===== CETAK TEXT 58mm ===== */
+/* ===== CETAK TEXT + ESC/POS ===== */
 function cetakText() {
-  if (!cacheData.pesanan) {
-    alert("Data belum siap");
-    return;
-  }
+  if (!cacheData.pesanan) return;
 
+  const ESC = "\x1B";
+  const GS  = "\x1D";
   const w = 32;
+
   const padR = (t, n) => t + " ".repeat(Math.max(0, n - t.length));
-  const padL = (t, n) => " ".repeat(Math.max(0, n - t.length)) + t;
 
   let t = "";
 
-  t += padL(cacheData.toko.nama_toko || "TOKO", 20) + "\n";
-  if (cacheData.toko.alamat) t += cacheData.toko.alamat + "\n";
+  // INIT
+  t += ESC + "@";
+
+  // JUDUL (CENTER + BOLD)
+  t += ESC + "a" + "\x01";
+  t += ESC + "E" + "\x01";
+  t += (cacheData.toko.nama_toko || "TOKO") + "\n";
+  t += ESC + "E" + "\x00";
+  t += ESC + "a" + "\x00";
+
+  if (cacheData.toko.alamat)
+    t += cacheData.toko.alamat + "\n";
+
   t += "-".repeat(w) + "\n";
 
   t += "No : " + cacheData.pesanan.no + "\n";
@@ -219,10 +200,18 @@ function cetakText() {
   });
 
   t += "-".repeat(w) + "\n";
+
+  // TOTAL BOLD
+  t += ESC + "E" + "\x01";
   const total = cacheData.pesanan.total.toLocaleString();
   t += padR("TOTAL", w - total.length) + total + "\n";
+  t += ESC + "E" + "\x00";
+
   t += "-".repeat(w) + "\n";
   t += "Terima kasih\n\n";
+
+  // FEED & CUT
+  t += GS + "V" + "\x00";
 
   document.getElementById("outputText").value = t;
 }
