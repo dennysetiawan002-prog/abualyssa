@@ -1,0 +1,86 @@
+/* ===== RESET RINGAN ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 12px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* ===== CARD ===== */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* ===== INPUT ===== */
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* ===== BUTTON ===== */
+button {
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button.small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+button.secondary {
+  background: #888 !important;
+}
+
+/* ===== LIST ===== */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  padding: 8px;
+  border-bottom: 1px dashed #ccc;
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+/* ===== ROW FLEX ===== */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.right {
+  text-align: right;
+}
+
+/* ===== BADGE ===== */
+.badge {
+  background: #eee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Price List</title>
+
+  <link rel="stylesheet" href="css/app.css">
+
+  <!-- LIBRARY EXPORT -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div class="header">
+  <h2>Price List</h2>
+</div>
+
+<div class="card">
+  <div class="row">
+    <button onclick="exportExcel()">📊 Excel</button>
+    <button onclick="exportPDF()">📄 PDF</button>
+    <button onclick="exportJPG()">🖼 JPG</button>
+  </div>
+</div>
+
+<!-- AREA YANG DIEKSPOR -->
+<div id="priceArea" class="card">
+
+  <!-- KOP -->
+  <div style="text-align:center">
+    <img id="logoToko" src="logo.png" style="max-height:80px"><br>
+    <strong id="namaToko">TOKO ANDA</strong><br>
+    <small id="alamatToko">Alamat toko</small><br>
+    <hr>
+    <strong>PRICE LIST</strong><br>
+    <small id="tanggalCetak"></small>
+  </div>
+
+  <!-- TABLE -->
+  <table border="1" width="100%" cellspacing="0" cellpadding="6" style="margin-top:10px">
+    <thead>
+      <tr style="text-align:center;font-weight:bold">
+        <td>No</td>
+        <td>Nama Produk</td>
+        <td>Satuan / Ukuran</td>
+        <td>Harga</td>
+      </tr>
+    </thead>
+    <tbody id="listPrice"></tbody>
+  </table>
+
+  <small style="display:block;margin-top:10px">
+    * Harga dapat berubah sewaktu-waktu<br>
+    * Price list dicetak dari sistem
+  </small>
+
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/price_list.js"></script>
+</body>
+</html>

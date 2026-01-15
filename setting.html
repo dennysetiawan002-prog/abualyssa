@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Setting</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="header">
+  <h2>Setting</h2>
+</div>
+
+<div class="card" id="info"></div>
+
+<!-- ================= SETTING SISTEM ================= -->
+<div class="card" id="settingSistem" style="display:none">
+  <h3>🔐 Setting Sistem</h3>
+
+  <input id="admin_password" type="password" placeholder="Password Admin Baru">
+  <button onclick="simpanPassword()">💾 Simpan Password Admin</button>
+</div>
+
+<hr>
+
+<!-- ================= SETTING TOKO ================= -->
+<div class="card" id="settingToko" style="display:none">
+  <h3>🏪 Setting Toko</h3>
+
+  <input id="nama_toko" placeholder="Nama Toko">
+  <input id="alamat_toko" placeholder="Alamat Toko">
+  <input id="telepon_toko" placeholder="Telepon">
+
+  <h4>Logo Toko</h4>
+  <input type="file" id="logo" accept="image/*">
+  <img id="previewLogo" style="max-height:80px;display:none">
+
+  <h4>Tampilan</h4>
+  <input type="color" id="warna_utama">
+  <input type="color" id="warna_tombol">
+
+  <select id="font_aplikasi">
+    <option value="system">System</option>
+    <option value="sans-serif">Sans Serif</option>
+    <option value="serif">Serif</option>
+    <option value="monospace">Monospace</option>
+  </select>
+
+  <button onclick="simpanSettingToko()">💾 Simpan Setting Toko</button>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/setting.js"></script>
+</body>
+</html>

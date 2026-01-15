@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Rincian Pesanan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f6f6f6;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .label {
+      color: #666;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f0f0;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .total {
+      font-size: 18px;
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 14px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-back {
+      background: #ccc;
+    }
+
+    .btn-print {
+      background: #2196f3;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Rincian Pesanan</h2>
+
+  <!-- HEADER PESANAN -->
+  <div class="card">
+    <div class="row">
+      <span class="label">No Pesanan</span>
+      <span id="noPesanan">-</span>
+    </div>
+    <div class="row">
+      <span class="label">Tanggal</span>
+      <span id="tanggal">-</span>
+    </div>
+    <div class="row">
+      <span class="label">Nama Toko</span>
+      <span id="namaToko">-</span>
+    </div>
+    <div class="row">
+      <span class="label">Sales</span>
+      <span id="sales">-</span>
+    </div>
+    <div class="row">
+      <span class="label">Status</span>
+      <span id="status">-</span>
+    </div>
+  </div>
+
+  <!-- DAFTAR ITEM -->
+  <div class="card">
+    <table>
+      <thead>
+  <tr>
+    <th></th>
+    <th>Produk</th>
+    <th class="text-right">Qty</th>
+    <th class="text-right">Harga</th>
+    <th class="text-right">Subtotal</th>
+  </tr>
+</thead>
+      <tbody id="listItem">
+        <tr>
+          <td colspan="4" style="text-align:center;color:#888">
+            Belum ada item
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TOTAL -->
+  <div class="card">
+    <div class="total">
+      Total: Rp <span id="total">0</span>
+    </div>
+  </div>
+
+  <!-- AKSI -->
+  <div class="actions">
+    <button class="btn-back" onclick="history.back()">⬅️ Kembali</button>
+    <button class="btn-print" id="btnPrint" style="display:none">
+      🖨 Cetak
+    </button>
+  </div>
+
+  <!-- SCRIPT DI SINI -->
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbzc7fFnO1J8wiitO1TGC_ubC5qy3p-ryJOJgtE_Vf-uxlKQ2Zr6S52C_oijqY6kJJMV/exec";
+  // Ambil parameter URL (HANYA SEKALI)
+  const params = new URLSearchParams(window.location.search);
+  const noPesanan = params.get("no");
+
+  if (noPesanan) {
+    document.getElementById("noPesanan").innerText = noPesanan;
+    loadDetailPesanan(noPesanan);
+  }
+
+  async function loadDetailPesanan(no) {
+    try {
+      const res = await fetch(
+        API_URL + "?action=getPesananDetail&no=" + encodeURIComponent(no)
+      );
+      const data = await res.json();
+
+      if (!data || !data.items || !data.items.length) {
+        alert("Detail pesanan tidak ditemukan");
+        return;
+      }
+window._detailItems = data.items;
+
+      // HEADER
+      document.getElementById("tanggal").innerText =
+        new Date(data.tanggal).toLocaleString();
+      document.getElementById("namaToko").innerText = data.nama_toko || "-";
+      document.getElementById("sales").innerText = data.sales || "-";
+      document.getElementById("status").innerText = data.status || "-";
+
+      // ITEM
+      const tbody = document.getElementById("listItem");
+      tbody.innerHTML = "";
+
+      let total = 0;
+      data.items.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+  <td>
+    <input type="checkbox"
+       class="chk-cetak"
+       data-index="${index}"
+       onchange="hitungTotalChecklist()">
+  </td>
+  <td>${item.produk}</td>
+  <td class="text-right">${item.qty}</td>
+  <td class="text-right">Rp ${Number(item.harga).toLocaleString()}</td>
+  <td class="text-right">Rp ${Number(item.subtotal).toLocaleString()}</td>
+`;
+        tbody.appendChild(tr);
+        total += Number(item.subtotal);
+      });
+
+      document.getElementById("total").innerText = "0";
+
+
+
+// ===== ROLE CHECK (AMAN UNTUK HP & DESKTOP) =====
+const role = (localStorage.getItem("role_sales") || "").toLowerCase().trim();
+const btnPrint = document.getElementById("btnPrint");
+
+if (role === "admin") {
+  btnPrint.style.display = "inline-block";
+
+  btnPrint.onclick = () => {
+    const checks = document.querySelectorAll(".chk-cetak");
+    const selectedItems = [];
+
+    checks.forEach(chk => {
+      if (chk.checked) {
+        const idx = Number(chk.dataset.index);
+        selectedItems.push(window._detailItems[idx]);
+      }
+    });
+
+    if (selectedItems.length === 0) {
+      alert("Pilih minimal satu produk untuk dicetak");
+      return;
+    }
+
+    localStorage.setItem(
+      "print_items",
+      JSON.stringify(selectedItems)
+    );
+
+    window.location.href =
+      "print.html?no=" + encodeURIComponent(noPesanan);
+  };
+} else {
+  btnPrint.style.display = "none";
+}
+
+    } catch (err) {
+      console.error(err);
+      alert("Gagal memuat detail pesanan");
+    }
+  }
+
+function hitungTotalChecklist() {
+  const checks = document.querySelectorAll(".chk-cetak");
+  let total = 0;
+
+  checks.forEach(chk => {
+    if (chk.checked) {
+      const idx = Number(chk.dataset.index);
+      const item = window._detailItems[idx];
+      total += Number(item.subtotal || 0);
+    }
+  });
+
+  document.getElementById("total").innerText =
+    total.toLocaleString();
+}
+</script>
+</body>
+</html>

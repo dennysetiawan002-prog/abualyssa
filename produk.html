@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Produk</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="header">
+  <h2>Data Produk</h2>
+</div>
+
+<!-- FORM TAMBAH PRODUK (ADMIN ONLY) -->
+<div class="card" id="formProduk" style="display:none">
+  <h3>Tambah Produk</h3>
+
+  <input id="nama_produk" placeholder="Nama Produk">
+
+  <input id="supplier" placeholder="Nama Supplier">
+
+  <select id="satuan">
+    <option value="">Pilih Satuan</option>
+    <option>pcs</option>
+    <option>dus</option>
+    <option>batang</option>
+    <option>gulungan</option>
+  </select>
+
+  <select id="jenis_ukuran">
+    <option value="">Jenis Ukuran</option>
+    <option>berat</option>
+    <option>panjang</option>
+    <option>dimensi</option>
+  </select>
+
+  <input id="nilai_ukuran" placeholder="Nilai ukuran (contoh: 25 kg / 4 m)">
+
+  <input id="harga_modal" placeholder="Harga Modal">
+  <input id="harga_jual" placeholder="Harga Jual">
+
+  <input id="stok" placeholder="Stok (boleh kosong)">
+
+  <input type="file" id="foto" accept="image/*">
+
+  <button onclick="simpanProduk()">💾 Simpan Produk</button>
+</div>
+
+<!-- DAFTAR PRODUK -->
+<div class="row">
+  <button onclick="bukaPriceList()">
+    📋 Price List
+  </button>
+</div>
+<div class="card">
+  <div class="row">
+    <h3>Daftar Produk</h3>
+    <button class="secondary" onclick="updateProduk()">🔄 Update</button>
+  </div>
+<input 
+  type="text"
+  id="searchProduk"
+  placeholder="🔍 Cari produk..."
+  oninput="filterProduk()"
+  style="width:100%;padding:8px;margin-bottom:10px"
+>
+
+  <ul id="listProduk"></ul>
+</div>
+
+<!-- POPUP UPDATE STOK & HARGA (ADMIN ONLY) -->
+<div id="popupUpdate" class="popup" style="display:none">
+  <div class="popup-content">
+    <h3>Update Stok / Harga</h3>
+
+    <div id="infoProduk"></div>
+
+    <input id="delta_stok" placeholder="Perubahan stok (contoh: +10 / -3)">
+    <input id="harga_jual_baru" placeholder="Harga jual baru (opsional)">
+    <input id="harga_modal_baru" placeholder="Harga modal baru (opsional)">
+
+    <div class="row">
+      <button onclick="simpanUpdate()">💾 Simpan</button>
+      <button class="secondary" onclick="tutupPopup()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/produk.js"></script>
+</body>
+</html>

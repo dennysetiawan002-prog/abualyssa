@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Pelanggan</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div class="header">
+  <h2>Data Pelanggan</h2>
+</div>
+
+<!-- FORM INPUT -->
+<div class="card">
+  <h3>Tambah Pelanggan</h3>
+
+  <input id="nama" placeholder="Nama Toko">
+  <input id="nama_pemilik" placeholder="Nama Pemilik">
+  <input id="alamat" placeholder="Alamat Lengkap">
+
+  <div class="row">
+    <input id="hp" placeholder="No HP">
+    <button type="button" class="secondary" onclick="pilihKontak()">📇</button>
+  </div>
+
+  <button onclick="simpanPelanggan()">💾 Simpan Pelanggan</button>
+</div>
+
+<!-- LIST -->
+<div class="card">
+  <div class="row" style="margin-bottom:8px">
+    <h3>Daftar Pelanggan</h3>
+    <button class="secondary" onclick="updatePelanggan()">🔄 Update</button>
+  </div>
+
+  <ul id="listPelanggan"></ul>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/pelanggan.js"></script>
+</body>
+</html>

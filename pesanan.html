@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu Pesanan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 16px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .card {
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #555;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    button {
+      padding: 10px;
+      width: 100%;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      background: #2d7ef7;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #eee;
+      padding: 8px 4px;
+      text-align: left;
+    }
+
+    th {
+      background: #fafafa;
+      font-size: 13px;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .total {
+      font-size: 16px;
+      font-weight: bold;
+      text-align: right;
+      margin-top: 8px;
+    }
+.suggest {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+  position: relative;
+  z-index: 10;
+}
+
+.suggest div {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.suggest div:hover {
+  background: #f0f0f0;
+}
+
+  </style>
+</head>
+<body>
+
+  <h2>🧾 Menu Pesanan</h2>
+
+  <!-- FORM INPUT -->
+  <div class="card">
+    <label>Nama Pelanggan</label>
+    <input type="text" id="inputPelanggan" placeholder="Ketik nama pelanggan">
+<div id="listPelanggan" class="suggest"></div>
+
+    <label>Produk</label>
+    <input type="text" id="inputProduk" placeholder="Ketik nama produk">
+<div id="listProduk" class="suggest"></div>
+
+    <label>Jumlah</label>
+    <input type="number" id="inputQty" placeholder="Jumlah">
+
+    <button id="btnTambah">Tambah ke Pesanan</button>
+  </div>
+
+  <!-- PESANAN SEMENTARA -->
+  <div class="card">
+    <table>
+      <thead>
+  <tr>
+    <th>Produk</th>
+    <th class="right">Qty</th>
+    <th class="right">Harga</th>
+    <th class="right">Subtotal</th>
+    <th>Aksi</th>
+  </tr>
+</thead>
+      <tbody id="listItem">
+        <tr>
+          <td colspan="4" style="text-align:center; color:#888">
+            Belum ada item
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="total">
+      Total: Rp 0
+    </div>
+  </div>
+<button id="btnKirimPesanan">Kirim Pesanan</button>
+<h3>Daftar Pesanan</h3>
+<table border="1" width="100%" id="tabelPesanan">
+  <thead>
+    <tr>
+      <th>No Pesanan</th>
+      <th>Tanggal</th>
+      <th>Nama Toko</th>
+      <th>Total</th>
+      <th>Status</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script src="js/api.js"></script>
+<script src="js/pesanan.js"></script>
+</body>
+</html>

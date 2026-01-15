@@ -1,0 +1,72 @@
+<link rel="stylesheet" href="css/app.css">
+<script src="js/theme.js"></script>
+
+<!DOCTYPE html>
+<html>
+<head>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1976d2">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kasir Abu Material">
+
+<meta name="viewport" content="width=device-width">
+<title>Kasir</title>
+</head>
+<body>
+
+<script>
+  // paksa setup awal
+  if (!localStorage.getItem("role_sales")) {
+    location.href = "setup.html";
+  }
+</script>
+
+<h2>Menu Utama Kasir</h2>
+
+<p>
+  Nama: <b id="namaUser"></b><br>
+  Role: <b id="roleUser"></b>
+</p>
+
+<hr>
+
+<!-- UPDATE SEMUA DATA (ADMIN ONLY) -->
+<div class="card" id="updateAllBox" style="display:none">
+  <button class="secondary" onclick="updateSemuaData()">
+    🔄 Update Semua Data
+  </button>
+</div>
+
+
+<button onclick="location.href='pelanggan.html'">Pelanggan</button><br><br>
+<button onclick="location.href='produk.html'">Produk</button><br><br>
+<button onclick="location.href='pesanan.html'">Pesanan</button><br><br>
+
+
+<script>
+  document.getElementById("namaUser").innerText =
+    localStorage.getItem("nama_sales");
+
+  document.getElementById("roleUser").innerText =
+    localStorage.getItem("role_sales");
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const role = localStorage.getItem("role_sales");
+  const box = document.getElementById("updateAllBox");
+
+  if (!box) return;
+
+  if (role === "admin") {
+    box.style.display = "block";
+  } else {
+    box.remove(); // 🔒 sales benar-benar tidak lihat
+  }
+});
+</script>
+
+</body>
+</html>
