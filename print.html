@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    /* ===== THERMAL 58mm ===== */
+    /* ===== THERMAL 58mm VISUAL ===== */
     body {
       font-family: monospace;
       width: 58mm;
@@ -15,13 +15,9 @@
       font-size: 12px;
     }
 
-    .center {
-      text-align: center;
-    }
-
-    .right {
-      text-align: right;
-    }
+    .center { text-align: center; }
+    .right { text-align: right; }
+    .bold { font-weight: bold; }
 
     hr {
       border: none;
@@ -39,17 +35,16 @@
       padding: 2px 0;
     }
 
-    .bold {
-      font-weight: bold;
-    }
-
-    .total {
-      font-size: 14px;
-      font-weight: bold;
+    textarea {
+      width: 100%;
+      height: 260px;
+      font-family: monospace;
+      font-size: 12px;
+      margin-top: 8px;
     }
 
     @media print {
-      button {
+      button, textarea {
         display: none;
       }
     }
@@ -57,57 +52,52 @@
 </head>
 <body>
 
-  <!-- HEADER TOKO -->
-<div class="center bold" id="namaTokoHeader">
-  -
-</div>
-<div class="center" id="alamatTokoHeader">
-</div>
-<div class="center">
-  Struk Pesanan
-</div>
+<!-- HEADER -->
+<div class="center bold" id="namaTokoHeader">-</div>
+<div class="center" id="alamatTokoHeader"></div>
+<div class="center">Struk Pesanan</div>
 
-  <hr>
+<hr>
 
-  <!-- INFO PESANAN -->
+<!-- INFO -->
 <div>No: <span id="noPesanan">-</span></div>
 <div>Tgl: <span id="tanggal">-</span></div>
 <div>Pelanggan: <span id="namaPelanggan">-</span></div>
 <div>Sales: <span id="sales">-</span></div>
 
-  <hr>
+<hr>
 
-  <!-- ITEM -->
-  <table id="listItem">
-    <tr>
-      <td colspan="2" class="center">Belum ada item</td>
-    </tr>
-  </table>
+<!-- ITEM -->
+<table id="listItem">
+  <tr>
+    <td colspan="2" class="center">Belum ada item</td>
+  </tr>
+</table>
 
-  <hr>
+<hr>
 
-  <!-- TOTAL -->
-  <table>
-    <tr>
-      <td class="bold">TOTAL</td>
-      <td class="right bold">
-        Rp <span id="total">0</span>
-      </td>
-    </tr>
-  </table>
+<!-- TOTAL -->
+<table>
+  <tr>
+    <td class="bold">TOTAL</td>
+    <td class="right bold">Rp <span id="total">0</span></td>
+  </tr>
+</table>
 
-  <hr>
+<hr>
 
-  <div class="center">
-    Terima kasih 🙏
-  </div>
+<div class="center">Terima kasih 🙏</div>
 
-  <div class="center" style="margin-top:10px">
-    <button onclick="window.print()">🖨 Cetak</button>
-  </div>
+<!-- BUTTON -->
+<div class="center" style="margin-top:10px">
+  <button onclick="window.print()">🖨 Cetak</button>
+  <button onclick="cetakText()">🧾 Cetak Thermal (Text 58mm)</button>
+</div>
 
-  <!-- SCRIPT -->
-  <script>
+<!-- OUTPUT TEXT -->
+<textarea id="outputText" placeholder="Output text struk 58mm akan muncul di sini..."></textarea>
+
+<script>
 const selectedItems =
   JSON.parse(localStorage.getItem("print_items") || "[]");
 
@@ -115,95 +105,127 @@ if (!selectedItems.length) {
   alert("Tidak ada item yang dipilih untuk dicetak");
 }
 
-  const API_URL = "https://script.google.com/macros/s/AKfycbzc7fFnO1J8wiitO1TGC_ubC5qy3p-ryJOJgtE_Vf-uxlKQ2Zr6S52C_oijqY6kJJMV/exec";
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzc7fFnO1J8wiitO1TGC_ubC5qy3p-ryJOJgtE_Vf-uxlKQ2Zr6S52C_oijqY6kJJMV/exec";
 
 loadSettingToko();
 
-  // Ambil parameter no dari URL
-  const params = new URLSearchParams(window.location.search);
-  const noPesanan = params.get("no");
+const params = new URLSearchParams(window.location.search);
+const noPesanan = params.get("no");
 
-  if (noPesanan) {
-    document.getElementById("noPesanan").innerText = noPesanan;
-    loadDetailPesanan(noPesanan);
-  }
+if (noPesanan) {
+  document.getElementById("noPesanan").innerText = noPesanan;
+  loadDetailPesanan(noPesanan);
+}
+
+let cacheData = {};
 
 async function loadSettingToko() {
   try {
     const res = await fetch(API_URL + "?action=getSettingToko");
     const data = await res.json();
-
     if (!data) return;
 
-    // Sesuaikan key setting dengan Apps Script kamu
-    document.getElementById("namaTokoHeader").innerText =
-      data.nama_toko || "TOKO";
+    document.getElementById("namaTokoHeader").innerText = data.nama_toko || "TOKO";
+    document.getElementById("alamatTokoHeader").innerText = data.alamat || "";
 
-    document.getElementById("alamatTokoHeader").innerText =
-      data.alamat || "";
-
+    cacheData.toko = data;
   } catch (err) {
-    console.error("Gagal memuat setting toko", err);
+    console.error(err);
   }
 }
 
-  async function loadDetailPesanan(no) {
-    try {
-      const res = await fetch(
-        API_URL + "?action=getPesananDetail&no=" + encodeURIComponent(no)
-      );
-      const data = await res.json();
+async function loadDetailPesanan(no) {
+  try {
+    const res = await fetch(
+      API_URL + "?action=getPesananDetail&no=" + encodeURIComponent(no)
+    );
+    const data = await res.json();
 
-      if (!data || !data.items || !data.items.length) {
-        alert("Data pesanan tidak ditemukan");
-        return;
-      }
-
-      // Tanggal
-      document.getElementById("tanggal").innerText =
-        new Date(data.tanggal).toLocaleString();
-// Nama toko & sales
-document.getElementById("namaPelanggan").innerText = data.nama_toko || "-";
-document.getElementById("sales").innerText = data.sales || "-";
-
-      // Item
-      const table = document.getElementById("listItem");
-      table.innerHTML = "";
-
-      let total = 0;
-
-      selectedItems.forEach(item => {
-        const tr1 = document.createElement("tr");
-        tr1.innerHTML = `
-          <td colspan="2">${item.produk}</td>
-        `;
-
-        const tr2 = document.createElement("tr");
-        tr2.innerHTML = `
-          <td>${item.qty} x ${Number(item.harga).toLocaleString()}</td>
-          <td class="right">
-            ${Number(item.subtotal).toLocaleString()}
-          </td>
-        `;
-
-        table.appendChild(tr1);
-        table.appendChild(tr2);
-
-        total += Number(item.subtotal);
-      });
-
-      // Total
-document.getElementById("total").innerText =
-  total.toLocaleString();
-
-// bersihkan data cetak
-localStorage.removeItem("print_items");
-
-    } catch (err) {
-      console.error(err);
-      alert("Gagal memuat data cetak");
+    if (!data || !data.items || !data.items.length) {
+      alert("Data pesanan tidak ditemukan");
+      return;
     }
+
+    document.getElementById("tanggal").innerText =
+      new Date(data.tanggal).toLocaleString();
+
+    document.getElementById("namaPelanggan").innerText = data.nama_toko || "-";
+    document.getElementById("sales").innerText = data.sales || "-";
+
+    const table = document.getElementById("listItem");
+    table.innerHTML = "";
+
+    let total = 0;
+
+    selectedItems.forEach(item => {
+      table.innerHTML += `
+        <tr><td colspan="2">${item.produk}</td></tr>
+        <tr>
+          <td>${item.qty} x ${Number(item.harga).toLocaleString()}</td>
+          <td class="right">${Number(item.subtotal).toLocaleString()}</td>
+        </tr>
+      `;
+      total += Number(item.subtotal);
+    });
+
+    document.getElementById("total").innerText = total.toLocaleString();
+
+    cacheData.pesanan = {
+      no,
+      tanggal: data.tanggal,
+      pelanggan: data.nama_toko,
+      sales: data.sales,
+      items: selectedItems,
+      total
+    };
+
+    localStorage.removeItem("print_items");
+  } catch (err) {
+    console.error(err);
+    alert("Gagal memuat data cetak");
   }
+}
+
+/* ===== CETAK TEXT 58mm ===== */
+function cetakText() {
+  if (!cacheData.pesanan) {
+    alert("Data belum siap");
+    return;
+  }
+
+  const w = 32;
+  const padR = (t, n) => t + " ".repeat(Math.max(0, n - t.length));
+  const padL = (t, n) => " ".repeat(Math.max(0, n - t.length)) + t;
+
+  let t = "";
+
+  t += padL(cacheData.toko.nama_toko || "TOKO", 20) + "\n";
+  if (cacheData.toko.alamat) t += cacheData.toko.alamat + "\n";
+  t += "-".repeat(w) + "\n";
+
+  t += "No : " + cacheData.pesanan.no + "\n";
+  t += "Tgl: " + new Date(cacheData.pesanan.tanggal).toLocaleString() + "\n";
+  t += "Plg: " + (cacheData.pesanan.pelanggan || "-") + "\n";
+  t += "Sls: " + (cacheData.pesanan.sales || "-") + "\n";
+
+  t += "-".repeat(w) + "\n";
+
+  cacheData.pesanan.items.forEach(i => {
+    t += i.produk + "\n";
+    const kiri = `${i.qty} x ${Number(i.harga).toLocaleString()}`;
+    const kanan = Number(i.subtotal).toLocaleString();
+    t += padR(kiri, w - kanan.length) + kanan + "\n";
+  });
+
+  t += "-".repeat(w) + "\n";
+  const total = cacheData.pesanan.total.toLocaleString();
+  t += padR("TOTAL", w - total.length) + total + "\n";
+  t += "-".repeat(w) + "\n";
+  t += "Terima kasih\n\n";
+
+  document.getElementById("outputText").value = t;
+}
 </script>
 
 </body>
