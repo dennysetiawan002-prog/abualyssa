@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Cetak Pesanan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: monospace;
+      width: 58mm;
+      margin: 0 auto;
+      padding: 8px;
+      font-size: 12px;
+    }
+
+    .center { text-align: center; }
+    .right { text-align: right; }
+    .bold { font-weight: bold; }
+
+    hr {
+      border: none;
+      border-top: 1px dashed #000;
+      margin: 6px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    td {
+      vertical-align: top;
+      padding: 2px 0;
+    }
+
+    textarea {
+      width: 100%;
+      height: 260px;
+      font-family: monospace;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    @media print {
+      button, textarea { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="center bold" id="namaTokoHeader">-</div>
+<div class="center" id="alamatTokoHeader"></div>
+<div class="center">Struk Pesanan</div>
+
+<hr>
+
+<div>No: <span id="noPesanan">-</span></div>
+<div>Tgl: <span id="tanggal">-</span></div>
+<div>Pelanggan: <span id="namaPelanggan">-</span></div>
+<div>Sales: <span id="sales">-</span></div>
+
+<hr>
+
+<table id="listItem">
+  <tr><td colspan="2" class="center">Belum ada item</td></tr>
+</table>
+
+<hr>
+
+<table>
+  <tr>
+    <td class="bold">TOTAL</td>
+    <td class="right bold">Rp <span id="total">0</span></td>
+  </tr>
+</table>
+
+<hr>
+
+<div class="center">Terima kasih 🙏</div>
+
+<div class="center" style="margin-top:10px">
+  <button onclick="window.print()">🖨 Cetak</button>
+  <button onclick="cetakText()">🧾 Cetak Thermal (Text 58mm)</button>
+  <button onclick="cetakTextDanShare()">📤 Cetak & Share (Thermal)</button>
+</div>
+
+<textarea id="outputText" placeholder="Output text ESC/POS 58mm..."></textarea>
+
+<script>
+const selectedItems =
+  JSON.parse(localStorage.getItem("print_items") || "[]");
+
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzc7fFnO1J8wiitO1TGC_ubC5qy3p-ryJOJgtE_Vf-uxlKQ2Zr6S52C_oijqY6kJJMV/exec";
+
+let cacheData = {};
+
+loadSettingToko();
+
+const params = new URLSearchParams(window.location.search);
+const noPesanan = params.get("no");
+
+if (noPesanan) {
+  document.getElementById("noPesanan").innerText = noPesanan;
+  loadDetailPesanan(noPesanan);
+}
+
+async function loadSettingToko() {
+  const res = await fetch(API_URL + "?action=getSettingToko");
+  const data = await res.json();
+  if (!data) return;
+
+  document.getElementById("namaTokoHeader").innerText = data.nama_toko || "TOKO";
+  document.getElementById("alamatTokoHeader").innerText = data.alamat || "";
+
+  cacheData.toko = data;
+}
+
+async function loadDetailPesanan(no) {
+  const res = await fetch(
+    API_URL + "?action=getPesananDetail&no=" + encodeURIComponent(no)
+  );
+  const data = await res.json();
+  if (!data || !data.items) return;
+
+  document.getElementById("tanggal").innerText =
+    new Date(data.tanggal).toLocaleString();
+
+  document.getElementById("namaPelanggan").innerText = data.nama_toko || "-";
+  document.getElementById("sales").innerText = data.sales || "-";
+
+  const table = document.getElementById("listItem");
+  table.innerHTML = "";
+
+  let total = 0;
+  selectedItems.forEach(item => {
+    table.innerHTML += `
+      <tr><td colspan="2">${item.produk}</td></tr>
+      <tr>
+        <td>${item.qty} x ${Number(item.harga).toLocaleString()}</td>
+        <td class="right">${Number(item.subtotal).toLocaleString()}</td>
+      </tr>
+    `;
+    total += Number(item.subtotal);
+  });
+
+  document.getElementById("total").innerText = total.toLocaleString();
+
+  cacheData.pesanan = {
+    no,
+    tanggal: data.tanggal,
+    pelanggan: data.nama_toko,
+    sales: data.sales,
+    items: selectedItems,
+    total
+  };
+
+  localStorage.removeItem("print_items");
+}
+
+/* ===== CETAK TEXT + ESC/POS ===== */
+function cetakText() {
+  if (!cacheData.pesanan) return;
+
+  const ESC = "\x1B";
+  const GS  = "\x1D";
+  const w = 32;
+
+  const padR = (t, n) => t + " ".repeat(Math.max(0, n - t.length));
+
+  let t = "";
+
+  // INIT
+  t += ESC + "@";
+
+  // JUDUL (CENTER + BOLD)
+  t += ESC + "a" + "\x01";
+  t += ESC + "E" + "\x01";
+  t += (cacheData.toko.nama_toko || "TOKO") + "\n";
+  t += ESC + "E" + "\x00";
+  t += ESC + "a" + "\x00";
+
+  if (cacheData.toko.alamat)
+    t += cacheData.toko.alamat + "\n";
+
+  t += "-".repeat(w) + "\n";
+
+  t += "No : " + cacheData.pesanan.no + "\n";
+  t += "Tgl: " + new Date(cacheData.pesanan.tanggal).toLocaleString() + "\n";
+  t += "Plg: " + (cacheData.pesanan.pelanggan || "-") + "\n";
+  t += "Sls: " + (cacheData.pesanan.sales || "-") + "\n";
+
+  t += "-".repeat(w) + "\n";
+
+  cacheData.pesanan.items.forEach(i => {
+    t += i.produk + "\n";
+    const kiri = `${i.qty} x ${Number(i.harga).toLocaleString()}`;
+    const kanan = Number(i.subtotal).toLocaleString();
+    t += padR(kiri, w - kanan.length) + kanan + "\n";
+  });
+
+  t += "-".repeat(w) + "\n";
+
+  // TOTAL BOLD
+  t += ESC + "E" + "\x01";
+  const total = cacheData.pesanan.total.toLocaleString();
+  t += padR("TOTAL", w - total.length) + total + "\n";
+  t += ESC + "E" + "\x00";
+
+  t += "-".repeat(w) + "\n";
+  t += "Terima kasih\n\n";
+
+  // FEED & CUT
+  t += GS + "V" + "\x00";
+
+  document.getElementById("outputText").value = t;
+}
+  
+function cetakTextDanShare() {
+  // Panggil generator text ESC/POS
+  cetakText();
+
+  const text = document.getElementById("outputText").value;
+
+  if (!text) {
+    alert("Output text belum ada");
+    return;
+  }
+
+  if (navigator.share) {
+    navigator.share({
+      text: text
+    }).catch(err => {
+      console.error("Share dibatalkan", err);
+    });
+  } else {
+    alert("Fitur share tidak didukung di perangkat ini");
+  }
+}
+
+</script>
+
+</body>
+</html>
