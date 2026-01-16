@@ -35,11 +35,7 @@
     }
 
     textarea {
-      width: 100%;
-      height: 260px;
-      font-family: monospace;
-      font-size: 12px;
-      margin-top: 8px;
+      display: none;
     }
 
     @media print {
@@ -80,8 +76,7 @@
 <div class="center">Terima kasih 🙏</div>
 
 <div class="center" style="margin-top:10px">
-  <button onclick="window.print()">🖨 Cetak</button>
-  <button onclick="cetakText()">🧾 Cetak Thermal (Text 58mm)</button>
+  
   <button onclick="cetakTextDanShare()">📤 Cetak & Share (Thermal)</button>
 </div>
 
@@ -243,3 +238,4 @@ function cetakTextDanShare() {
 
 </body>
 </html>
+
